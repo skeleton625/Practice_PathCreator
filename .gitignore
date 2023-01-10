@@ -1,0 +1,10 @@
+Assembly-CSharp-Editor.csproj
+Assembly-CSharp.csproj
+.vs/
+.vsconfig
+Library/
+Logs/
+Practice_PathCreator.sln
+Temp/
+UserSettings/
+obj/
