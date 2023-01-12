@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 245285788}
   - component: {fileID: 245285787}
   - component: {fileID: 245285786}
+  - component: {fileID: 245285789}
   m_Layer: 0
   m_Name: Terrain
   m_TagString: Untagged
@@ -199,6 +200,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &245285789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 245285785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 124ead6adfdad024cb9256e2c3be7121, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &653260035
 GameObject:
   m_ObjectHideFlags: 0
@@ -321,11 +334,11 @@ MonoBehaviour:
     - {x: -2.2276626, y: 0, z: 2.8932877}
     - {x: -2.6774573, y: 0, z: 2.7689958}
     - {x: -3.11653, y: 0, z: 2.6476667}
-    - {x: -3.6939845, y: 0, z: 2.4541125}
+    - {x: -3.6965854, y: 0, z: 2.46555}
     - {x: -4.139435, y: 0, z: 2.3588257}
-    - {x: -4.5940447, y: 0, z: 2.2615795}
-    - {x: -5.1330996, y: 0, z: 2.1959898}
-    - {x: -5.6721544, y: 0, z: 2.1304002}
+    - {x: -4.9458165, y: 0, z: 2.1644921}
+    - {x: -5.897668, y: 0, z: 1.9877629}
+    - {x: -6.8495193, y: 0, z: 1.8110337}
     isClosed: 0
     autoSetControlPoints: 1
 --- !u!114 &1560434296
@@ -340,10 +353,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea505cfffa8059d42ad248a467540edd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  autoUpdate: 1
   spacing: 0.3
   roadWidth: 1
-  autoUpdate: 1
+  thickness: 1
   tiling: 1
+  offsetY: 0.1
 --- !u!23 &1560434297
 MeshRenderer:
   m_ObjectHideFlags: 0
