@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 [RequireComponent(typeof(PathCreator))]
@@ -10,37 +7,67 @@ using UnityEngine;
 public class RoadMeshCreator : MonoBehaviour
 {
     [Range(.05f, 1.5f)]
+    public bool autoUpdate;
     public float spacing = 1;
     public float roadWidth = 1;
-    public bool autoUpdate;
+    public float thickness = 1;
     public float tiling = 1;
     public float offsetY = .1f;
 
     private PathCreator pathCreator;
+    private VertexPath vertexPath;
     private Path path;
 
     private void Start()
     {
         pathCreator = GetComponent<PathCreator>();
         path = pathCreator.path;
+
+        vertexPath = new VertexPath(path, transform, .3f, spacing);
     }
 
-    private void Update()
+    private void UpdateRoadMesh()
     {
-        if (autoUpdate)
-            UpdateRoad();
+        Vector3[] vertices = new Vector3[path.PointsCount * 8];
+        Vector2[] UVs = new Vector2[vertices.Length];
+        Vector3[] normals = new Vector3[vertices.Length];
+
+        int trisLength = 2 * (path.PointsCount - 1) + (path.IsClosed ? 2 : 0);
+        int[] roadTriangles = new int[trisLength * 3];
+        int[] underRoadTriangles = new int[trisLength * 3];
+        int[] sideOfRoadTriangles = new int[trisLength * 2 * 3];
+
+        int vertIndex = 0;
+        int triIndex = 0;
+
+        int[] triangleMap = { 0, 8, 1, 1, 8, 9 };
+        int[] sidesTriangleMap = { 4, 6, 14, 12, 4, 14, 5, 15, 7, 13, 15, 5 };
+
+        for (int i = 0; i < vertexPath.PointsCount; ++i)
+        {
+            Vector3 localUp = vertexPath.up;
+            Vector3 localRight = Vector3.Cross(localUp, vertexPath.GetTangent(i));
+
+            Vector3 widthVector = localRight * Mathf.Abs(roadWidth) - transform.position;
+            Vector3 vertSideA = vertexPath.GetPoint(i) - widthVector;
+            Vector3 vertSideB = vertexPath.GetPoint(i) + widthVector;
+            vertSideA.y = GetTerrainPosition(vertSideA).y + offsetY;
+            vertSideB.y = GetTerrainPosition(vertSideB).y + offsetY;
+
+            vertices[vertIndex] = vertSideA;
+            vertices[vertIndex + 1] = vertSideB;
+            vertices[vertIndex + 2] = vertSideA;
+        }
     }
 
-    public void UpdateRoad()
+    private Vector3 GetTerrainPosition(Vector3 point)
     {
-        Vector3[] points = path.CalculateEvenlySpacedPoints(spacing);
-        GetComponent<MeshFilter>().mesh = CreateRoadMesh(points, path.IsClosed);
-
-        int textureRepeat = Mathf.RoundToInt(tiling * points.Length * spacing * .05f);
-        GetComponent<MeshRenderer>().sharedMaterial.mainTextureScale = new Vector2(1, textureRepeat);
+        point.y = 100;
+        return Physics.Raycast(point, Vector3.down, out RaycastHit hit, 100, 1) ? hit.point : Vector3.zero;
     }
 
-    Mesh CreateRoadMesh(Vector3[] points, bool isClosed)
+    /* Prev Update Mesh
+    private Mesh CreateRoadMesh(Vector3[] points, bool isClosed)
     {
         Vector3[] verts = new Vector3[points.Length * 2];
         Vector2[] uvs = new Vector2[verts.Length];
@@ -95,4 +122,5 @@ public class RoadMeshCreator : MonoBehaviour
 
         return mesh;
     }
+    */
 }

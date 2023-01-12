@@ -277,45 +277,6 @@ public class Path
     }
     #endregion
 
-    #region Path Bezier Space Points Functions
-    public Vector3[] CalculateEvenlySpacedPoints(float spacing, float resolution = 1)
-    {
-        List<Vector3> evenlySpacedPoints = new List<Vector3>();
-        evenlySpacedPoints.Add(points[0]);
-        Vector3 previousPoint = points[0];
-        float distSinceLastEvenPoint = 0;
-
-        for (int segmentIndex = 0; segmentIndex < SegmentsCount; ++segmentIndex)
-        {
-            Vector3[] p = GetPointsInSegment(segmentIndex);
-            float controlNetLength = (p[0] - p[1]).magnitude + (p[1] - p[2]).magnitude + (p[2] - p[3]).magnitude;
-            float estimatedCurveLength = (p[0] - p[3]).magnitude + controlNetLength / 2f;
-            int divisions = Mathf.CeilToInt(estimatedCurveLength * resolution * 10);
-
-            float t = 0;
-            while (t <= 1)
-            {
-                t += 1f / divisions;
-                Vector3 pointOnCurve = BezierUtility.EvaluateCubic(p[0], p[1], p[2], p[3], t);
-                distSinceLastEvenPoint += (previousPoint - pointOnCurve).magnitude;
-
-                while (distSinceLastEvenPoint >= spacing)
-                {
-                    float overshootDist = distSinceLastEvenPoint - spacing;
-                    Vector3 newEvenlySpacedPoint = pointOnCurve + (previousPoint - pointOnCurve).normalized * overshootDist;
-                    evenlySpacedPoints.Add(newEvenlySpacedPoint);
-                    distSinceLastEvenPoint = overshootDist;
-                    previousPoint = newEvenlySpacedPoint;
-                }
-
-                previousPoint = pointOnCurve;
-            }
-        }
-
-        return evenlySpacedPoints.ToArray();
-    }
-    #endregion
-
     #region Path Get Point Functions
     public Vector3[] GetPointsInSegment(int anchorIndex)
     {
