@@ -269,10 +269,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1560434294}
-  - component: {fileID: 1560434295}
   - component: {fileID: 1560434299}
   - component: {fileID: 1560434298}
   - component: {fileID: 1560434297}
+  - component: {fileID: 1560434295}
   - component: {fileID: 1560434296}
   m_Layer: 0
   m_Name: PathCreator
@@ -470,16 +470,16 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.5
+      value: 5
       inSlope: 0
-      outSlope: 5
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 2.5
+      value: 5
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -490,7 +490,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   rotationLerpTime: 0.01
-  invertY: 0
+  invertY: 1
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0

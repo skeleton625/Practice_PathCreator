@@ -26,7 +26,7 @@ public static class VertexPathUtility
             int divisions = Mathf.CeilToInt(estimatedSegmentLength * accuracy);
             float increment = 1f / divisions;
 
-            for (float t = increment; t < 2; t += increment)
+            for (float t = increment; t <= 1; t += increment)
             {
                 bool isLastPointOnPath = (t + increment > 1 && segmentIndex.Equals(path.SegmentsCount - 1));
                 if (isLastPointOnPath) t = 1;
