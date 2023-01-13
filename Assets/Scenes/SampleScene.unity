@@ -505,7 +505,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RoadObject: {fileID: 1192031610}
   RoadSpacing: 0.3
-  RoadWidth: 1
+  RoadWidth: 0.5
   RoadThickness: 0.5
   OffsetY: 0.1
   TextureTiling: 8
