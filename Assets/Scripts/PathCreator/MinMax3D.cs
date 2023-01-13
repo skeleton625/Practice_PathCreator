@@ -8,7 +8,7 @@ public class MinMax3D
     public MinMax3D()
     {
         Min = Vector3.one * float.MaxValue;
-        Max = Vector3.one * float.MaxValue;
+        Max = Vector3.one * float.MinValue;
     }
 
     public void AddValue(Vector3 v)

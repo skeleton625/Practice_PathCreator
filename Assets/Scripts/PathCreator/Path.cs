@@ -61,7 +61,7 @@ public class Path
         get => points.Count / 3;
     }
 
-    public Path(Vector3 centerPoint)
+    public Path(Vector3 centerPoint, bool autoSetControlPoints = false)
     {
         points = new List<Vector3>
         {
@@ -70,6 +70,8 @@ public class Path
             centerPoint + new Vector3(1, 0, -1) * .5f,
             centerPoint + new Vector3(1, 0, 0)
         };
+
+        AutoSetControlPoints = autoSetControlPoints;
     }
 
     #region Path Add, Remove point Functions

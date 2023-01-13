@@ -166,7 +166,17 @@ public class PathEditor : Editor
         if (pathCreator.path == null)
             pathCreator.CreatePath();
 
+        pathCreator.bezierCreated -= ResetState;
+        pathCreator.bezierCreated += ResetState;
+
         path = pathCreator.path;
     }
 
+    private void ResetState()
+    {
+        segmentSelectedIndex = -1;
+        path = pathCreator.path;
+
+        SceneView.RepaintAll();
+    }
 }

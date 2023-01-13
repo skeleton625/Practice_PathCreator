@@ -45,6 +45,7 @@ public static class VertexPathUtility
                     splitData.vertices.Add(pointOnPath);
                     splitData.tangents.Add(BezierUtility.EvaluateCurveDerivative(segmentPoitns, t).normalized);
                     splitData.minMax.AddValue(pointOnPath);
+                    distSinceLastVertex = 0;
                     lastAddedPoint = pointOnPath;
                 }
                 else

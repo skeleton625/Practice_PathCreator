@@ -3,20 +3,84 @@ using UnityEngine;
 
 public class TestController : MonoBehaviour
 {
+    [Header("Road Setting")]
     [SerializeField] private PathCreator pathCreator = null;
+    [SerializeField] private Transform TargetTransform = null;
+    [Space(10)]
 
-    [SerializeField] private float pointSpacing = .1f;
-    [SerializeField] private float pointResolution = 1f;
+    private bool startGenerateRoad = false;
+    private byte generateRoadType = 0;
+    private int generateRoadIndex = 0;
 
-    private List<GameObject> preSpacedPointsList = null;
+    private Camera mainCamera = null;
 
     private void Start()
     {
-        preSpacedPointsList = new List<GameObject>();
+        startGenerateRoad = false;
+
+        mainCamera = Camera.main;
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            Debug.Log("Start Generate Road");
+            startGenerateRoad = true;
+        }
 
+        if (startGenerateRoad)
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (!Physics.Raycast(ray, out RaycastHit hit, 1000, 1)) return;
+
+            switch (generateRoadType)
+            {
+                case 0:
+                    TargetTransform.position = hit.point;
+
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        pathCreator.path.MovePoints(0, hit.point);
+                        pathCreator.path.MovePoints(3, hit.point);
+                        generateRoadType = 1;
+                        generateRoadIndex = 3;
+                        pathCreator.SetActiveVisual(true);
+                    }
+                    else if (Input.GetMouseButtonDown(1))
+                    {
+                        ExitGenerateRoad();
+                    }
+                    break;
+                case 1:
+                    TargetTransform.position = hit.point;
+                    pathCreator.path.MovePoints(generateRoadIndex, hit.point);
+
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        pathCreator.path.AddSegment(hit.point);
+                        generateRoadIndex += 3;
+                    }
+                    else if (Input.GetMouseButtonDown(1))
+                    {
+                        pathCreator.GenerateRoad();
+
+                        ExitGenerateRoad();
+                        break;
+                    }
+                    break;
+            }
+        }
+    }
+
+    private void ExitGenerateRoad()
+    {
+        Debug.Log("End Generate Road");
+        startGenerateRoad = false;
+        generateRoadType = 0;
+        generateRoadIndex = 0;
+
+        pathCreator.SetActiveVisual(false);
+        pathCreator.CreatePath();
     }
 }

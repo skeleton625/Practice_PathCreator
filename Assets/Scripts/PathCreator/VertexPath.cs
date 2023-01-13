@@ -38,7 +38,6 @@ public class VertexPath
         localTangents = new Vector3[vertsCount];
         cumulativeLengthAtEachVertex = new float[vertsCount];
         times = new float[vertsCount];
-        
         bounds = new Bounds((pathSplitData.minMax.Min + pathSplitData.minMax.Max) / 2, pathSplitData.minMax.Max - pathSplitData.minMax.Min);
         up = (bounds.size.z > bounds.size.y) ? Vector3.up : -Vector3.forward;
 
@@ -48,6 +47,8 @@ public class VertexPath
             localTangents[i] = pathSplitData.tangents[i];
             cumulativeLengthAtEachVertex[i] = pathSplitData.cumulativeLength[i];
             times[i] = cumulativeLengthAtEachVertex[i] / length;
+
+            localNormals[i] = -Vector3.Cross(localTangents[i], up);
         }
     }
 
