@@ -23,6 +23,18 @@ public static class MathUtility
         return Vector3.Angle((a - b), (c - b));
     }
 
+    public static Vector3 ClosestPointOnLineSegment(Vector3 p, Vector3 a, Vector3 b)
+    {
+        Vector3 aB = b - a;
+        float sqrLenAB = aB.sqrMagnitude;
+
+        if (sqrLenAB.Equals(0)) return a;
+
+        Vector3 aP = p - a;
+        float t = Mathf.Clamp01(Vector3.Dot(aP, aB) / sqrLenAB);
+        return a + aB * t;
+    }
+
     private static LcokTransform LockTransformToSpace(Transform t)
     {
         LcokTransform original = new LcokTransform(t);

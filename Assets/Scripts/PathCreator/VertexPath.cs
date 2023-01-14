@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using UnityEngine;
 
 public class VertexPath
@@ -65,5 +66,60 @@ public class VertexPath
     public Vector3 GetPoint(int index)
     {
         return MathUtility.TransformPoint(localPoints[index], transform);
+    }
+
+    public Vector3 GetClosestPointOnPath(Vector3 point)
+    {
+        TimeOnPathData data = CalcuateClosestPointOnPathData(point);
+        return Vector3.Lerp(GetPoint(data.previousIndex), GetPoint(data.nextIndex), data.percentBetweenIndices);
+    }
+
+    private TimeOnPathData CalcuateClosestPointOnPathData(Vector3 point)
+    {
+        float minSqrDist = float.MaxValue;
+        Vector3 closestPoint = Vector3.zero;
+        int closestSegmentIndexA = 0;
+        int closestSegmentIndexB = 0;
+
+        for (int i = 0; i < localPoints.Length; i++)
+        {
+            int nextIndex = i + 1;
+            if (nextIndex >= localPoints.Length)
+            {
+                if (isClosedLoop)
+                    nextIndex %= localPoints.Length;
+                else
+                    break;
+            }
+
+            Vector3 closestPointOnSegment = MathUtility.ClosestPointOnLineSegment(point, GetPoint(i), GetPoint(nextIndex));
+            float sqrDist = (point - closestPointOnSegment).sqrMagnitude;
+            if (sqrDist < minSqrDist)
+            {
+                minSqrDist = sqrDist;
+                closestPoint = closestPointOnSegment;
+                closestSegmentIndexA = i;
+                closestSegmentIndexB = nextIndex;
+            }
+        }
+
+        float closestSegmentLength = (GetPoint(closestSegmentIndexA) - GetPoint(closestSegmentIndexB)).magnitude;
+        float t = (closestPoint - GetPoint(closestSegmentIndexA)).magnitude / closestSegmentLength;
+        return new TimeOnPathData(closestSegmentIndexA, closestSegmentIndexB, t);
+
+    }
+
+    public struct TimeOnPathData
+    {
+        public readonly int previousIndex;
+        public readonly int nextIndex;
+        public readonly float percentBetweenIndices;
+
+        public TimeOnPathData(int prev, int next, float percent)
+        {
+            previousIndex = prev;
+            nextIndex = next;
+            percentBetweenIndices = percent;
+        }
     }
 }

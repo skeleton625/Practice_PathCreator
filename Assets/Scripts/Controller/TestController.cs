@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,11 +7,15 @@ public class TestController : MonoBehaviour
     [Header("Road Setting")]
     [SerializeField] private PathCreator pathCreator = null;
     [SerializeField] private Transform TargetTransform = null;
+    [SerializeField] private Transform TestTargetTransform = null;
     [Space(10)]
 
     private bool startGenerateRoad = false;
     private byte generateRoadType = 0;
     private int generateRoadIndex = 0;
+
+    private int snappedHashCode = 0;
+    private VertexPathData snappedData = null;
 
     private Camera mainCamera = null;
 
@@ -63,12 +68,42 @@ public class TestController : MonoBehaviour
                     }
                     else if (Input.GetMouseButtonDown(1))
                     {
-                        pathCreator.GenerateRoad();
+                        if (generateRoadIndex > 3)
+                        {
+                            pathCreator.path.RemoveSegment(generateRoadIndex);
+                            pathCreator.RefreshRoad();
+
+                            pathCreator.GenerateRoad();
+                        }
 
                         ExitGenerateRoad();
                         break;
                     }
                     break;
+            }
+        }
+        else
+        {
+            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit, 1000, -1))
+            {
+                if (hit.transform.CompareTag("Road"))
+                {
+                    if (snappedData == null)
+                    {
+                        snappedHashCode = hit.transform.GetHashCode();
+                        snappedData = hit.transform.GetComponent<VertexPathData>();
+                    }
+                    else if (hit.transform.GetHashCode().Equals(snappedHashCode))
+                        TestTargetTransform.position = snappedData.GetClosestPoint(hit.point);
+                }
+                else if (snappedData != null)
+                {
+                    snappedHashCode = 0;
+                    snappedData = null;
+                }
+                else
+                    TestTargetTransform.position = hit.point;
             }
         }
     }

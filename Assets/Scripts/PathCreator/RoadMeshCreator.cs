@@ -10,6 +10,8 @@ public class RoadMeshCreator : MonoBehaviour
     private MeshCollider meshCollider = null;
     private Mesh mesh = null;
 
+    private VertexPath preVertexPath = null;
+
     [Header("Mesh Setting")]
     [SerializeField] private float RoadSpacing = 1;
     [SerializeField] private float RoadWidth = 1;
@@ -33,23 +35,29 @@ public class RoadMeshCreator : MonoBehaviour
     public void SetActiveVisual(bool isActive)
     {
         RoadObject.SetActive(isActive);
+
+        if (!isActive)
+        {
+            preVertexPath = null;
+        }
     }
 
     public void GenerateRoad()
     {
-        Instantiate(RoadObject, Vector3.zero, Quaternion.identity);
+        var road = Instantiate(RoadObject, Vector3.zero, Quaternion.identity);
+        road.GetComponent<VertexPathData>().Initialize(preVertexPath);
         mesh = new Mesh();
     }
 
     public void UpdateRoadMesh(Path path)
     {
-        VertexPath vertexPath = new VertexPath(path, RoadObject.transform, .3f, RoadSpacing);
+        preVertexPath = new VertexPath(path, RoadObject.transform, .3f, RoadSpacing);
 
-        Vector3[] vertices = new Vector3[vertexPath.PointsCount * 8];
+        Vector3[] vertices = new Vector3[preVertexPath.PointsCount * 8];
         Vector2[] UVs = new Vector2[vertices.Length];
         Vector3[] normals = new Vector3[vertices.Length];
 
-        int trisLength = 2 * (vertexPath.PointsCount - 1) + (path.IsClosed ? 2 : 0);
+        int trisLength = 2 * (preVertexPath.PointsCount - 1) + (path.IsClosed ? 2 : 0);
         int[] roadTriangles = new int[trisLength * 3];
         int[] underRoadTriangles = new int[trisLength * 3];
         int[] sideOfRoadTriangles = new int[trisLength * 2 * 3];
@@ -60,14 +68,14 @@ public class RoadMeshCreator : MonoBehaviour
         int[] triangleMap = { 0, 8, 1, 1, 8, 9 };
         int[] sidesTriangleMap = { 4, 6, 14, 12, 4, 14, 5, 15, 7, 13, 15, 5 };
 
-        for (int i = 0; i < vertexPath.PointsCount; i++)
+        for (int i = 0; i < preVertexPath.PointsCount; i++)
         {
-            Vector3 localUp = Vector3.Cross(vertexPath.GetTangent(i), vertexPath.GetNormal(i));
-            Vector3 localRight = vertexPath.GetNormal(i);
+            Vector3 localUp = Vector3.Cross(preVertexPath.GetTangent(i), preVertexPath.GetNormal(i));
+            Vector3 localRight = preVertexPath.GetNormal(i);
 
             // Find position to left and right of current path vertex
-            Vector3 vertSideA = vertexPath.GetPoint(i) - localRight * Mathf.Abs(RoadWidth) - transform.position;
-            Vector3 vertSideB = vertexPath.GetPoint(i) + localRight * Mathf.Abs(RoadWidth) - transform.position;
+            Vector3 vertSideA = preVertexPath.GetPoint(i) - localRight * Mathf.Abs(RoadWidth);
+            Vector3 vertSideB = preVertexPath.GetPoint(i) + localRight * Mathf.Abs(RoadWidth);
 
             vertSideA.y = GetTerrainPosition(vertSideA + transform.position).y + OffsetY;
             vertSideB.y = GetTerrainPosition(vertSideB + transform.position).y + OffsetY;
@@ -86,8 +94,8 @@ public class RoadMeshCreator : MonoBehaviour
             vertices[vertIndex + 7] = vertices[vertIndex + 3];
 
             // Set uv on y axis to path time (0 at start of path, up to 1 at end of path)
-            UVs[vertIndex + 0] = new Vector2(0, vertexPath.times[i]);
-            UVs[vertIndex + 1] = new Vector2(1, vertexPath.times[i]);
+            UVs[vertIndex + 0] = new Vector2(0, preVertexPath.times[i]);
+            UVs[vertIndex + 1] = new Vector2(1, preVertexPath.times[i]);
 
             // Top of road normals
             normals[vertIndex + 0] = localUp;
@@ -102,7 +110,7 @@ public class RoadMeshCreator : MonoBehaviour
             normals[vertIndex + 7] = localRight;
 
             // Set triangle indices
-            if (i < vertexPath.PointsCount - 1 || path.IsClosed)
+            if (i < preVertexPath.PointsCount - 1 || path.IsClosed)
             {
                 for (int j = 0; j < triangleMap.Length; j++)
                 {

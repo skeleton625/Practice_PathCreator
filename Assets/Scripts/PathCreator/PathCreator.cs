@@ -20,6 +20,17 @@ public class PathCreator : MonoBehaviour
 
     [HideInInspector] public Path path;
 
+    private void Start()
+    {
+        CreatePath();
+    }
+
+    private void Update()
+    {
+        if (AutoUpdate)
+            MeshCreator.UpdateRoadMesh(path);
+    }
+
     public void CreatePath()
     {
         path = new Path(transform.position, true);
@@ -33,19 +44,13 @@ public class PathCreator : MonoBehaviour
         AutoUpdate = isActive;
     }
 
+    public void RefreshRoad()
+    {
+        MeshCreator.UpdateRoadMesh(path);
+    }
+
     public void GenerateRoad()
     {
         MeshCreator.GenerateRoad();
-    }
-
-    private void Start()
-    {
-        CreatePath();
-    }
-
-    private void Update()
-    {
-        if (AutoUpdate)
-            MeshCreator.UpdateRoadMesh(path);
     }
 }
