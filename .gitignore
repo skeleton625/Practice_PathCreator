@@ -1,10 +1,12 @@
 Assembly-CSharp-Editor.csproj
 Assembly-CSharp.csproj
+NavMeshComponents.csproj
+NavMeshComponentsEditor.csproj
+Practice_PathCreator.sln
 .vs/
 .vsconfig
+UserSettings/
 Library/
 Logs/
-Practice_PathCreator.sln
 Temp/
-UserSettings/
 obj/
