@@ -3,7 +3,9 @@ using UnityEngine;
 
 public static class VertexPathUtility
 {
-    public static PathSplitData SplitBezierPathByAngleError(Path path, float maxAngleError, float minVertexDist, float accuracy)
+    private static float maxAngleError = .3f;
+
+    public static PathSplitData SplitBezierPathByAngleError(Path path, float minVertexDist, float accuracy)
     {
         PathSplitData splitData = new PathSplitData();
 

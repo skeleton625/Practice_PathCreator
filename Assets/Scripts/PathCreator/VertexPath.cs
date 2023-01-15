@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using UnityEngine;
 
 public class VertexPath
@@ -9,6 +8,8 @@ public class VertexPath
     public readonly Vector3[] localPoints;
     public readonly Vector3[] localTangents;
     public readonly Vector3[] localNormals;
+    public Vector3[] localSidePointsA;
+    public Vector3[] localSidePointsB;
 
     public readonly float[] times;
     public readonly float length;
@@ -17,18 +18,14 @@ public class VertexPath
     public readonly Vector3 up;
 
     private const int accuracy = 10;
-    private const float minVertexSpacing = .01f;
-
-    private Transform transform;
 
     public int PointsCount { get => localPoints.Length; }
 
-    public VertexPath(Path path, Transform transform, float maxAngleError = .3f, float minVertexDist = 0f) :
-        this(path, VertexPathUtility.SplitBezierPathByAngleError(path, maxAngleError, minVertexDist, accuracy), transform) { }
+    public VertexPath(Path path, float minVertexDist = 0f, float roadWidth = 1f, float offsetY = 0f) :
+        this(path, VertexPathUtility.SplitBezierPathByAngleError(path, minVertexDist, accuracy), roadWidth, offsetY) { }
 
-    public VertexPath (Path path, VertexPathUtility.PathSplitData pathSplitData, Transform transform)
+    public VertexPath (Path path, VertexPathUtility.PathSplitData pathSplitData, float width, float offsetY)
     {
-        this.transform = transform;
         isClosedLoop = path.IsClosed;
 
         int vertsCount = pathSplitData.vertices.Count;
@@ -37,6 +34,8 @@ public class VertexPath
         localPoints = new Vector3[vertsCount];
         localNormals = new Vector3[vertsCount];
         localTangents = new Vector3[vertsCount];
+        localSidePointsA = new Vector3[vertsCount];
+        localSidePointsB = new Vector3[vertsCount];
         cumulativeLengthAtEachVertex = new float[vertsCount];
         times = new float[vertsCount];
         bounds = new Bounds((pathSplitData.minMax.Min + pathSplitData.minMax.Max) / 2, pathSplitData.minMax.Max - pathSplitData.minMax.Min);
@@ -50,28 +49,51 @@ public class VertexPath
             times[i] = cumulativeLengthAtEachVertex[i] / length;
 
             localNormals[i] = -Vector3.Cross(localTangents[i], up);
+            localSidePointsA[i] = localPoints[i] - localNormals[i] * width;
+            localSidePointsB[i] = localPoints[i] + localNormals[i] * width;
+            localSidePointsA[i].y = GetTerrainPosition(localSidePointsA[i]).y + offsetY;
+            localSidePointsB[i].y = GetTerrainPosition(localSidePointsB[i]).y + offsetY;
         }
     }
 
     public Vector3 GetTangent(int index)
     {
-        return MathUtility.TransformDirection(localTangents[index], transform);
+        return localTangents[index];
     }
 
     public Vector3 GetNormal(int index)
     {
-        return MathUtility.TransformDirection(localNormals[index], transform);
+        return localNormals[index];
     }
 
     public Vector3 GetPoint(int index)
     {
-        return MathUtility.TransformPoint(localPoints[index], transform);
+        return localPoints[index];
+    }
+
+    public Vector3 GetSidePointA(int index)
+    {
+        return localSidePointsA[index];
+    }
+
+    public Vector3 GetSidePointB(int index)
+    {
+        return localSidePointsB[index];
     }
 
     public Vector3 GetClosestPointOnPath(Vector3 point)
     {
         TimeOnPathData data = CalcuateClosestPointOnPathData(point);
-        return Vector3.Lerp(GetPoint(data.previousIndex), GetPoint(data.nextIndex), data.percentBetweenIndices);
+
+        Vector3 pointA = Vector3.Lerp(localSidePointsA[data.previousIndex], localSidePointsA[data.nextIndex], data.percentBetweenIndices);
+        Vector3 pointB = Vector3.Lerp(localSidePointsB[data.previousIndex], localSidePointsB[data.nextIndex], data.percentBetweenIndices);
+        return (point - pointA).sqrMagnitude < (point - pointB).sqrMagnitude ? pointA : pointB;
+    }
+
+    private Vector3 GetTerrainPosition(Vector3 point)
+    {
+        point.y = 100;
+        return Physics.Raycast(point, Vector3.down, out RaycastHit hit, 100, 1) ? hit.point : Vector3.zero;
     }
 
     private TimeOnPathData CalcuateClosestPointOnPathData(Vector3 point)

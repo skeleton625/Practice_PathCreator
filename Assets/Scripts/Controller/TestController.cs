@@ -1,13 +1,14 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class TestController : MonoBehaviour
 {
     [Header("Road Setting")]
     [SerializeField] private PathCreator pathCreator = null;
     [SerializeField] private Transform TargetTransform = null;
-    [SerializeField] private Transform TestTargetTransform = null;
+    [SerializeField] private NavMeshSurface navMeshSurface = null;
     [Space(10)]
 
     private bool startGenerateRoad = false;
@@ -37,7 +38,7 @@ public class TestController : MonoBehaviour
         if (startGenerateRoad)
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (!Physics.Raycast(ray, out RaycastHit hit, 1000, 1)) return;
+            if (!Physics.Raycast(ray, out RaycastHit hit, 1000, -1)) return;
 
             switch (generateRoadType)
             {
@@ -58,8 +59,24 @@ public class TestController : MonoBehaviour
                     }
                     break;
                 case 1:
-                    TargetTransform.position = hit.point;
-                    pathCreator.path.MovePoints(generateRoadIndex, hit.point);
+                    if (hit.transform.CompareTag("Road"))
+                    {
+                        if (snappedData == null)
+                        {
+                            snappedHashCode = hit.transform.GetHashCode();
+                            snappedData = hit.transform.GetComponent<VertexPathData>();
+                        }
+                        else if (hit.transform.GetHashCode().Equals(snappedHashCode))
+                            TargetTransform.position = snappedData.GetClosestPoint(hit.point);
+                    }
+                    else if (snappedData != null)
+                    {
+                        snappedHashCode = 0;
+                        snappedData = null;
+                    }
+                    else
+                        TargetTransform.position = hit.point;
+                    pathCreator.path.MovePoints(generateRoadIndex, TargetTransform.position);
 
                     if (Input.GetMouseButtonDown(0))
                     {
@@ -74,36 +91,13 @@ public class TestController : MonoBehaviour
                             pathCreator.RefreshRoad();
 
                             pathCreator.GenerateRoad();
+                            navMeshSurface.UpdateNavMesh();
                         }
 
                         ExitGenerateRoad();
                         break;
                     }
                     break;
-            }
-        }
-        else
-        {
-            Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit, 1000, -1))
-            {
-                if (hit.transform.CompareTag("Road"))
-                {
-                    if (snappedData == null)
-                    {
-                        snappedHashCode = hit.transform.GetHashCode();
-                        snappedData = hit.transform.GetComponent<VertexPathData>();
-                    }
-                    else if (hit.transform.GetHashCode().Equals(snappedHashCode))
-                        TestTargetTransform.position = snappedData.GetClosestPoint(hit.point);
-                }
-                else if (snappedData != null)
-                {
-                    snappedHashCode = 0;
-                    snappedData = null;
-                }
-                else
-                    TestTargetTransform.position = hit.point;
             }
         }
     }
